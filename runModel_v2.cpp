@@ -400,17 +400,56 @@ void SaveResults(const std::vector<State>& samples)
   out.close();   
 }
 
+int len(MatrixD vector_matrix) {
+  return vector_matrix.size2();
+}
 
+
+MatrixD get_cluster_counts(MatrixD state_o, MatrixD unique_f) {
+  int num_views = unique_f.size2(); //state_o.size1();
+  int num_objects = state_o.size2();
+  MatrixD cluster_counts = boost::numeric::ublas::zero_matrix<double>(1, num_views);
+  for(int unique_f_idx=0; unique_f_idx<num_views; unique_f_idx++) {
+    int view_idx = unique_f(0, unique_f_idx);
+    view_idx -= 1; //for matlab to c++ indexing
+    MatrixD curr_o = project(state_o, boost::numeric::ublas::range(view_idx, view_idx+1),
+			     boost::numeric::ublas::range(0, num_objects));
+    cluster_counts(0, unique_f_idx) = len(unique(curr_o));
+  }
+  return cluster_counts;
+}
+
+void print_cluster_counts(MatrixD cluster_counts) {
+  std::cout << cluster_counts(0,0);
+  int num_counts = cluster_counts.size2();
+  for(int count_idx=1; count_idx<num_counts; count_idx++) {
+    int curr_count = cluster_counts(0,count_idx);
+    std::cout << ";" << curr_count;
+  }
+}
+
+void PrintM(const MatrixD& M, const std::string msg)
+{
+  cout << msg << " = " << endl << M << endl << endl;
+}
 
 State drawSample(State& state, int lag)
 { 
   int i;
+  Timer my_T(true);
   for(i = 0; i < lag ; i++)
     {  
       cout << i << endl;
       //scoreState(state)
       State oldstate = state;
-     
+
+      // size the problem
+      int start_num_views = len(unique(state.f));
+      MatrixD start_num_clusters_per_view = get_cluster_counts(state.o, unique(state.f));
+      // PrintM(state.o, "state.o, before");
+      // PrintM(state.f, "state.f, before");
+      my_T.Reset();
+
       // sample hyper parameters
       //cout << "SampleHyperParams" << endl;
       state = sampleHyperParams(state);
@@ -425,6 +464,17 @@ State drawSample(State& state, int lag)
       //sample categories
       //cout<<"sampleCategories"<<endl;
       state = sampleCategories(state);
+
+      double elapsed_secs = my_T.GetElapsed();
+      std::cout << "timing :: ";
+      std::cout << state.F;
+      std::cout << " , " << state.O;
+      std::cout << " , " << start_num_views;
+      std::cout << " , "; print_cluster_counts(start_num_clusters_per_view);
+      std::cout << " , " << elapsed_secs << std::endl;
+      // PrintM(state.o, "state.o, after");
+      // PrintM(state.f, "state.f, after");
+      1;
     }  
 
   return state;
@@ -1976,7 +2026,6 @@ void LoadData(std::string file, boost::numeric::ublas::matrix<double>& M)
   M = Data;
 
 }
-
 
 double get_element(MatrixD M, int i, int j)
 {
