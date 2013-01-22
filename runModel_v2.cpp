@@ -38,7 +38,8 @@ class State;
 
 
 void MainLoop(State& state);
-void SaveResults(const std::vector<State>& samples);
+void SaveResultHeader();
+void SaveResult(const State state, int i);
 
 void SaveMatrix(const MatrixD& M, std::string filename);
 void SetaRange(State& state);
@@ -331,6 +332,8 @@ void MainLoop(State& state)
 
       // burn-in
       samples.push_back(drawSample(state, GP.burnIn));
+      SaveResultHeader();
+      SaveResult(samples[samples.size()-1], 1);
 
       //      samples{length(samples)+1} = drawSample(state, burnIn); 
       cout <<" t1 = " << T.GetElapsed() << endl;
@@ -341,18 +344,15 @@ void MainLoop(State& state)
 	  // only store every 'lag' samples
 	  cout << "ns = " << ns << endl;
       	  samples.push_back(drawSample(samples[samples.size() - 1], GP.lag));
+	  SaveResult(samples[samples.size()-1], ns);
       	  cout << "t2 = " <<  T.GetElapsed() << endl;
       	}  
     }
-
-  SaveResults(samples);
-
 }
 
-
-void SaveResults(const std::vector<State>& samples)
+void SaveResultHeader()
 {
-  string filename = "crossCatNG_" + GP.dataFile + " (" + DateTime::GetDateTimeStr() + ")";
+  string filename = "crossCatNG_" + GP.dataFile;
 
   ofstream out(filename.c_str()); 
   if(!out) 
@@ -367,40 +367,43 @@ void SaveResults(const std::vector<State>& samples)
   out << "lag = " <<  GP.lag << endl;
 
   out << endl;
-
-  int i;
-  for(i = 0; i < samples.size() ;i++)
-    {
-      State state = samples[i];
-      out << "State"<<i<<endl;
-      out << "F = " << state.F << endl;
-      out << "O = " << state.O << endl;
-      out << "f = " << state.f << endl;
-      out << "o = " << state.o << endl;
-      out << "paramPrior = " << state.paramPrior << endl;
-      out << "cumParamPrior = " << state.cumParamPrior << endl;
-      out << "paramRange = " << state.paramRange << endl;
-      out << "crpKRange = " << state.crpKRange << endl;
-      out << "crpCRange = " << state.crpCRange << endl;
-      out << "kRange = " << state.kRange << endl;
-      out << "aRange = " << state.aRange << endl;
-      out << "muRange = " << state.muRange << endl;
-      out << "bRange = " << state.bRange << endl;
-      out << "crpPriorK = " << state.crpPriorK << endl;
-      out << "crpPriorC = " << state.crpPriorC << endl;
-      out << "NG_a = " << state.NG_a << endl;
-      out << "NG_k = " << state.NG_k << endl;
-      out << "NG_b = " << state.NG_b << endl;
-      out << "NG_mu = " << state.NG_mu << endl;
-      out << endl << endl;
-    }
-
-
-    
-  out.close();   
+  out.close();
 }
 
+void SaveResult(const State state, int i)
+{
+  string filename = "crossCatNG_" + GP.dataFile;
 
+  ofstream out(filename.c_str(),fstream::app); 
+  if(!out) 
+    { 
+      cout << "Cannot open file.\n"; 
+      return; 
+    } 
+
+  out << "State"<<i<<endl;
+  out << "F = " << state.F << endl;
+  out << "O = " << state.O << endl;
+  out << "f = " << state.f << endl;
+  out << "o = " << state.o << endl;
+  out << "paramPrior = " << state.paramPrior << endl;
+  out << "cumParamPrior = " << state.cumParamPrior << endl;
+  out << "paramRange = " << state.paramRange << endl;
+  out << "crpKRange = " << state.crpKRange << endl;
+  out << "crpCRange = " << state.crpCRange << endl;
+  out << "kRange = " << state.kRange << endl;
+  out << "aRange = " << state.aRange << endl;
+  out << "muRange = " << state.muRange << endl;
+  out << "bRange = " << state.bRange << endl;
+  out << "crpPriorK = " << state.crpPriorK << endl;
+  out << "crpPriorC = " << state.crpPriorC << endl;
+  out << "NG_a = " << state.NG_a << endl;
+  out << "NG_k = " << state.NG_k << endl;
+  out << "NG_b = " << state.NG_b << endl;
+  out << "NG_mu = " << state.NG_mu << endl;
+  out << endl << endl;
+  out.close();
+}
 
 State drawSample(State& state, int lag)
 { 
