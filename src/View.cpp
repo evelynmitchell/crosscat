@@ -63,6 +63,10 @@ double View::get_crp_alpha() const {
   return crp_alpha;
 }
 
+vector<double> View::get_crp_alpha_grid() const {
+  return crp_alpha_grid;
+}
+
 vector<string> View::get_hyper_strings() {
   vector<string> hyper_strings;
   hyper_strings.push_back("r");
