@@ -249,7 +249,7 @@ double View::transition_hypers() {
 }
 
 double View::transition(std::map<int, std::vector<double> > row_data_map) {
-  vector<int> which_transitions = create_sequence(3);
+  vector<int> which_transitions = create_sequence(2);
   //FIXME: use own shuffle so seed control is in effect
   std::random_shuffle(which_transitions.begin(), which_transitions.end());
   double score_delta = 0;
@@ -260,8 +260,8 @@ double View::transition(std::map<int, std::vector<double> > row_data_map) {
       score_delta += transition_hypers();
     } else if(which_transition==1) {
       score_delta += transition_zs(row_data_map);
-    } else if(which_transition==2) {
-      score_delta += transition_crp_alpha();
+    // } else if(which_transition==2) {
+    //   score_delta += transition_crp_alpha();
     }
   }
   return score_delta;
