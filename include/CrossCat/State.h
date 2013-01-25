@@ -33,6 +33,7 @@ class State {
   int get_num_views() const;
   std::vector<int> get_view_counts() const;
   double get_column_crp_alpha() const;
+  double get_row_crp_alpha() const;
   double get_column_crp_score() const;
   double get_data_score() const;
   double get_marginal_logp() const;
@@ -53,7 +54,8 @@ class State {
   double transition_view_i(int which_view,
 			 std::map<int, std::vector<double> > row_data_map);
   double transition_views(const MatrixD &data);
-  double transition_column_crp_alpha();  
+  double transition_column_crp_alpha();
+  double transition_row_crp_alpha();
   double transition(const MatrixD &data);
   //
   // calculators
@@ -74,9 +76,11 @@ class State {
   // parameters
   std::map<int, std::map<std::string, double> > hypers_m;
   double column_crp_alpha;
+  double row_crp_alpha;
   double column_crp_score;
   double data_score;
   std::vector<double> column_crp_alpha_grid;
+  std::vector<double> row_crp_alpha_grid;
   // lookups
   std::set<View*> views;
   std::map<int, View*> view_lookup;  // global_column_index to View mapping

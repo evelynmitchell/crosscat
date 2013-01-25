@@ -12,12 +12,11 @@ typedef set<Cluster*> setCp;
 View::View(const MatrixD data,
 	   vector<int> global_row_indices,
 	   vector<int> global_col_indices,
-	   map<int, map<string, double> > &hypers_m,
-	   int SEED, int N_GRID) : n_grid(N_GRID), rng(SEED) {
+	   map<int, map<string, double> > &hypers_m, double CRP_ALPHA,
+	   int SEED, int N_GRID) : crp_alpha(CRP_ALPHA), n_grid(N_GRID), rng(SEED) {
   assert(global_row_indices.size()==data.size1());
   assert(global_col_indices.size()==data.size2());
   //
-  crp_alpha = 0.8;
   crp_score = 0;
   data_score = 0;
   //
@@ -29,7 +28,7 @@ View::View(const MatrixD data,
   }
 }
 
-View::View(int SEED) : rng(SEED) {
+View::View(double CRP_ALPHA, int SEED) : crp_alpha(CRP_ALPHA), rng(SEED) {
   n_grid = 31;
   crp_alpha = 0.8;
   crp_score = 0;
@@ -246,7 +245,7 @@ double View::transition_hypers() {
 }
 
 double View::transition(std::map<int, std::vector<double> > row_data_map) {
-  vector<int> which_transitions = create_sequence(3);
+  vector<int> which_transitions = create_sequence(2);
   //FIXME: use own shuffle so seed control is in effect
   std::random_shuffle(which_transitions.begin(), which_transitions.end());
   double score_delta = 0;
@@ -257,8 +256,8 @@ double View::transition(std::map<int, std::vector<double> > row_data_map) {
       score_delta += transition_hypers();
     } else if(which_transition==1) {
       score_delta += transition_zs(row_data_map);
-    } else if(which_transition==2) {
-      score_delta += transition_crp_alpha();
+    // } else if(which_transition==2) {
+    //   score_delta += transition_crp_alpha();
     }
   }
   return score_delta;

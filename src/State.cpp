@@ -12,6 +12,7 @@ State::State(const MatrixD &data,
 	     //vector<string> global_col_datatypes,
 	     int N_GRID, int SEED) : rng(SEED) {
   column_crp_alpha = 0.8;
+  row_crp_alpha = 0.8;
   construct_hyper_grids(data, N_GRID);
   init_hypers(global_col_indices);
   init_views(data, global_row_indices, global_col_indices);
@@ -121,7 +122,7 @@ double State::transition_features(const MatrixD &data) {
 }
 
 View& State::get_new_view() {
-  View *p_new_view = new View(draw_rand_i());
+  View *p_new_view = new View(row_crp_alpha, draw_rand_i());
   views.insert(p_new_view);
   return *p_new_view;
 }
@@ -262,6 +263,18 @@ vector<double> State::calc_column_crp_marginals(vector<double> alphas_to_score) 
   return crp_scores;
 }
 
+vector<double> State::calc_row_crp_marginals(vector<double> alphas_to_score) const {
+  vector<vector<double> > logps_v;
+  set<View*>::iterator it;
+  for(it=views.begin(); it!=views.end(); it++) {
+    View &v = **it;
+    vector<double> view_crp_marginals = v.calc_crp_marginals(row_crp_alpha_grid);
+    logps_v.push_back(view_crp_marginals);
+  }
+  vector<double> logps = std_vector_sum(logps_v);
+  return logps;
+}
+
 void State::SaveResult(string filename) {
   ofstream out(filename.c_str(), ios_base::app);
   if(!out) {
@@ -373,8 +386,12 @@ double State::transition_column_crp_alpha() {
   return crp_score_delta;
 }
 
+double State::transition_row_crp_alpha() {
+  // FIXME: implement
+}
+
 double State::transition(const MatrixD &data) {
-  vector<int> which_transitions = create_sequence(3);
+  vector<int> which_transitions = create_sequence(4);
   //FIXME: use own shuffle so seed control is in effect
   std::random_shuffle(which_transitions.begin(), which_transitions.end());
   double score_delta = 0;
@@ -388,6 +405,8 @@ double State::transition(const MatrixD &data) {
       score_delta += transition_features(data);
     } else if(which_transition==2) {
       score_delta += transition_column_crp_alpha();
+    } else if(which_transition==3) {
+      score_delta += transition_row_crp_alpha();
     }
   }
   return score_delta;
@@ -395,6 +414,7 @@ double State::transition(const MatrixD &data) {
 
 void State::construct_hyper_grids(const MatrixD data, int N_GRID) {
   column_crp_alpha_grid = create_crp_alpha_grid(data.size2(), N_GRID);
+  row_crp_alpha_grid = create_crp_alpha_grid(data.size1(), N_GRID);
 }
  
 double State::draw_rand_u() {
@@ -433,7 +453,7 @@ void State::init_views(const MatrixD &data, vector<int> global_row_indices,
     vector<int> column_indices = *cp_it;
     const MatrixD data_subset = extract_columns(data, column_indices);
     View *p_v = new View(data_subset, global_row_indices, column_indices,
-			 hypers_m, draw_rand_i());
+			 hypers_m, row_crp_alpha, draw_rand_i());
     views.insert(p_v);
     vector<int>::iterator ci_it;
     for(ci_it=column_indices.begin(); ci_it!=column_indices.end(); ci_it++) {
