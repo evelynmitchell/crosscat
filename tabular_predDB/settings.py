@@ -27,6 +27,7 @@ class path():
     this_dir = os.path.dirname(os.path.abspath(__file__))
     this_repo_dir = os.path.abspath(os.path.join(this_dir, '..'))
     install_script_dir = os.path.join(this_repo_dir, 'install_scripts')
+    examples_dir = os.path.join(this_repo_dir, 'Examples')
     web_resources_dir = os.path.join(this_repo_dir, 'www')
     web_resources_data_dir = os.path.join(web_resources_dir, 'data')
     #
