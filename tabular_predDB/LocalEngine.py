@@ -14,6 +14,7 @@
 #   limitations under the License.
 #
 import tabular_predDB.cython_code.State as State
+import tabular_predDB.smile.Smile as Smile
 import tabular_predDB.EngineTemplate as EngineTemplate
 import tabular_predDB.python_utils.sample_utils as su
 
@@ -45,6 +46,11 @@ class LocalEngine(EngineTemplate.EngineTemplate):
 
     def impute(self, M_c, X_L, X_D, Y, Q, n):
         e = su.impute(M_c, X_L, X_D, Y, Q, n, self.get_next_seed)
+        return e
+
+    def impute_smile(self, smile_stuff, Y, Q, n):
+        smile_model = Smile.Smile(smile_stuff)
+        e = smile_model.impute(Y, Q, n)
         return e
 
     def impute_and_confidence(self, M_c, X_L, X_D, Y, Q, n):
@@ -85,3 +91,5 @@ def do_simple_predictive_sample(M_c, X_L, X_D, Y, Q, n, get_next_seed):
 
 if __name__ == '__main__':
     le = LocalEngine(seed=10)
+    # demonstrate SMILE functionality
+    # print le.impute_smile(smile_stuff, Y, Q, n)
