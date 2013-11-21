@@ -48,8 +48,7 @@ def gen_correlated_data( n, r, SEED=0 ):
 get_next_seed = lambda : random.randrange(32000)
 
 correlations = [.0, .1, .2, .3, .4 , .5, .6, .7, .8, .9, 1.0]
-# N = [5, 10, 25, 50]
-N = [50]
+N = [5, 10, 25, 50]
 n_samples = 10
 n_data_sets = 3
 pl.figure()
